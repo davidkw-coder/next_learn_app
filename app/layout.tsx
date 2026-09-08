@@ -17,19 +17,19 @@ export default function RootLayout({
 }
 
 
-export default function HomePage() {
-  return (
-    <main className="p-8">
-      <h1 className="mb-6 text-4xl font-bold">
-        Dashboard
-      </h1>
+// export default function Layout() {
+//   return (
+//     <main className="p-8">
+//       <h1 className="mb-6 text-4xl font-bold">
+//         Dashboard
+//       </h1>
 
-      <Image
-        src="/dashboard.png"
-        alt="Dashboard preview"
-        width={800}
-        height={500}
-      />
-    </main>
-  );
-}
+//       <Image
+//         src="/dashboard.png"
+//         alt="Dashboard preview"
+//         width={800}
+//         height={500}
+//       />
+//     </main>
+//   );
+// }
