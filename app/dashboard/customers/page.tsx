@@ -1,13 +1,25 @@
-export default function CustomersPage() {
-  return (
-    <div>
-      <h1 className="text-3xl font-bold">
-        Customers
-      </h1>
+import { fetchFilteredCustomers } from '@/app/lib/data';
+import CustomersTable from '@/app/ui/customers/table';
+import { Metadata } from 'next';
 
-      <p className="mt-2 text-gray-600">
-        Manage your customers here.
-      </p>
-    </div>
+export const metadata: Metadata = {
+  title: 'Customers',
+};
+
+export default async function Page(props: {
+  searchParams?: Promise<{
+    query?: string;
+    page?: string;
+  }>;
+}) {
+  const searchParams = await props.searchParams;
+  const query = searchParams?.query || '';
+
+  const customers = await fetchFilteredCustomers(query);
+
+  return (
+    <main>
+      <CustomersTable customers={customers} />
+    </main>
   );
 }

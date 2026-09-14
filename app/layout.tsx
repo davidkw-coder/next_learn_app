@@ -1,35 +1,23 @@
-import "./globals.css";
-import { inter } from "./ui/fonts";
-import Image from "next/image";
+import '@/app/ui/global.css';
+import { inter } from '@/app/ui/fonts';
+import { Metadata } from 'next';
 
+export const metadata: Metadata = {
+  title: {
+    template: '%s | Acme Dashboard',
+    default: 'Acme Dashboard',
+  },
+  description: 'The official Next.js Learn Dashboard built with App Router.',
+  metadataBase: new URL('https://next-learn-dashboard.vercel.sh'),
+};
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        {children}
-      </body>
+      <body className={`${inter.className} antialiased`}>{children}</body>
     </html>
   );
 }
-
-
-// export default function Layout() {
-//   return (
-//     <main className="p-8">
-//       <h1 className="mb-6 text-4xl font-bold">
-//         Dashboard
-//       </h1>
-
-//       <Image
-//         src="/dashboard.png"
-//         alt="Dashboard preview"
-//         width={800}
-//         height={500}
-//       />
-//     </main>
-//   );
-// }

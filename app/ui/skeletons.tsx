@@ -1,0 +1,5 @@
+export function CardsSkeleton() { return <div className="col-span-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"><div className="h-32 animate-pulse rounded-xl bg-gray-100" /><div className="h-32 animate-pulse rounded-xl bg-gray-100" /><div className="h-32 animate-pulse rounded-xl bg-gray-100" /><div className="h-32 animate-pulse rounded-xl bg-gray-100" /></div>; }
+export function RevenueChartSkeleton() { return <div className="h-[450px] animate-pulse rounded-xl bg-gray-100 md:col-span-4" />; }
+export function LatestInvoicesSkeleton() { return <div className="h-[450px] animate-pulse rounded-xl bg-gray-100 md:col-span-4" />; }
+export function InvoicesTableSkeleton() { return <div className="mt-6 h-96 animate-pulse rounded-xl bg-gray-100" />; }
+export default function DashboardSkeleton() { return <main><div className="h-8 w-40 animate-pulse rounded bg-gray-100" /><div className="mt-6"><CardsSkeleton /></div><div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-4"><RevenueChartSkeleton /><LatestInvoicesSkeleton /></div></main>; }

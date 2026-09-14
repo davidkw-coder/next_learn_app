@@ -1,44 +1,12 @@
-import Link from "next/link";
+import SideNav from '@/app/ui/dashboard/sidenav';
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen">
-      <aside className="w-64 bg-gray-900 p-6 text-white">
-        <h2 className="mb-8 text-2xl font-bold">
-          My Dashboard
-        </h2>
-
-        <nav className="space-y-3">
-          <Link
-            href="/dashboard"
-            className="block rounded-md p-3 hover:bg-gray-800"
-          >
-            Dashboard
-          </Link>
-
-          <Link
-            href="/dashboard/customers"
-            className="block rounded-md p-3 hover:bg-gray-800"
-          >
-            Customers
-          </Link>
-
-          <Link
-            href="/dashboard/invoices"
-            className="block rounded-md p-3 hover:bg-gray-800"
-          >
-            Invoices
-          </Link>
-        </nav>
-      </aside>
-
-      <main className="flex-1 bg-gray-100 p-8">
-        {children}
-      </main>
+    <div className="flex h-screen flex-col md:flex-row md:overflow-hidden">
+      <div className="w-full flex-none md:w-64">
+        <SideNav />
+      </div>
+      <div className="grow p-6 md:overflow-y-auto md:p-12">{children}</div>
     </div>
   );
 }
