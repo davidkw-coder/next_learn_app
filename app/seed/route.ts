@@ -1,37 +1,15 @@
-import bcrypt from 'bcryptjs';
 import postgres from 'postgres';
-import { invoices, customers, revenue, users } from '../lib/placeholder-data';
+import { invoices, customers, revenue } from '../lib/placeholder-data';
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+type Transaction = Parameters<
+  Parameters<ReturnType<typeof postgres>['begin']>[1]
+>[0];
 
-async function seedUsers() {
-  await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
-  await sql`
-    CREATE TABLE IF NOT EXISTS users (
-      id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      email TEXT NOT NULL UNIQUE,
-      password TEXT NOT NULL
-    );
-  `;
+const sql = process.env.POSTGRES_URL
+  ? postgres(process.env.POSTGRES_URL, { ssl: 'require' })
+  : undefined;
 
-  const insertedUsers = await Promise.all(
-    users.map(async (user) => {
-      const hashedPassword = await bcrypt.hash(user.password, 10);
-      return sql`
-        INSERT INTO users (id, name, email, password)
-        VALUES (${user.id}, ${user.name}, ${user.email}, ${hashedPassword})
-        ON CONFLICT (id) DO NOTHING;
-      `;
-    }),
-  );
-
-  return insertedUsers;
-}
-
-async function seedInvoices() {
-  await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
-
+async function seedInvoices(sql: Transaction) {
   await sql`
     CREATE TABLE IF NOT EXISTS invoices (
       id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -42,20 +20,23 @@ async function seedInvoices() {
     );
   `;
 
-  const insertedInvoices = await Promise.all(
-    invoices.map(
-      (invoice) => sql`
-        INSERT INTO invoices (customer_id, amount, status, date)
-        VALUES (${invoice.customer_id}, ${invoice.amount}, ${invoice.status}, ${invoice.date})
-        ON CONFLICT (id) DO NOTHING;
-      `,
-    ),
+  return Promise.all(
+    invoices.map((invoice) => sql`
+      INSERT INTO invoices (customer_id, amount, status, date)
+      SELECT ${invoice.customer_id}, ${invoice.amount}, ${invoice.status}, ${invoice.date}
+      WHERE NOT EXISTS (
+        SELECT 1
+        FROM invoices
+        WHERE customer_id = ${invoice.customer_id}
+          AND amount = ${invoice.amount}
+          AND status = ${invoice.status}
+          AND date = ${invoice.date}
+      );
+    `),
   );
-
-  return insertedInvoices;
 }
 
-async function seedCustomers() {
+async function seedCustomers(sql: Transaction) {
   await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
 
   await sql`
@@ -80,7 +61,7 @@ async function seedCustomers() {
   return insertedCustomers;
 }
 
-async function seedRevenue() {
+async function seedRevenue(sql: Transaction) {
   await sql`
     CREATE TABLE IF NOT EXISTS revenue (
       month VARCHAR(4) NOT NULL UNIQUE,
@@ -101,17 +82,29 @@ async function seedRevenue() {
   return insertedRevenue;
 }
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
+  if (!sql) {
+    return Response.json(
+      { error: 'POSTGRES_URL must be configured before seeding the database.' },
+      { status: 503 },
+    );
+  }
+
   try {
-    const result = await sql.begin((sql) => [
-      seedUsers(),
-      seedCustomers(),
-      seedInvoices(),
-      seedRevenue(),
-    ]);
+    await sql.begin(async (transaction) => {
+      await seedCustomers(transaction);
+      await seedInvoices(transaction);
+      await seedRevenue(transaction);
+    });
 
     return Response.json({ message: 'Database seeded successfully' });
   } catch (error) {
-    return Response.json({ error }, { status: 500 });
+    console.error('Database seed error:', error);
+    return Response.json(
+      { error: 'Failed to seed the database.' },
+      { status: 500 },
+    );
   }
 }
